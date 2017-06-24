@@ -14,7 +14,7 @@ def initCurses():
     cbreak()
 def closeCurses():
     global stdscr
-    stdscrx.keypad(0)
+    stdscr.keypad(0)
     echo()
     nocbreak()
 
@@ -23,5 +23,6 @@ def makePrintln(initRow, initCol):
     def println(s):
         mvaddstr(initRow, initCol, s)
         initRow += 1
+
     return println
 println = makePrintln(0,0)
