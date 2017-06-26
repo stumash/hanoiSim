@@ -2,13 +2,33 @@
 # beats a game of Towers of Hano
 
 # imports
-from utils import *
+from unicUtils import *
 
-# The 3 pegs of the Towers of Hanoi game board
-A = 'A'
-B = 'B'
-C = 'C'
-pegs = [A, B, C]
+def main():
+    # get the game size
+    while True:
+        try:
+            gs = int(input("How tall should this Towers of Hanoi be? "))
+            break
+        except ValueError:
+            print("Must input a positive integer under 10.")
+
+    gb[A] = [x for x in list(reversed(range(1, gs+1)))]
+
+    print("initial state: " + str(gb))
+
+    initCurses()
+
+    showHanoiState(gb)
+    doHanoiMove(gs, A, C)
+
+    if (gb[A] == [] and gb[B] == []):
+        askToCont()
+
+    closeCurses()
+
+    print("final state: " + str(gb))
+    return 0
 
 # helper functions for the doHanoiMove function
 def otherPeg(fromPeg, toPeg): # given 2 of the 3 pegs, return the 3rd
@@ -19,34 +39,32 @@ def moveRing(fromPeg, toPeg): # on the game board gb, move a ring from fromPeg t
     ring = gb[fromPeg].pop()
     gb[toPeg].append(ring)
 
-# dat recursive glory
-def doHanoiMove(d, fromPeg, toPeg):
-    if (d == 0):
-        println(str(gb[fromPeg][-1]) + " from " + fromPeg + " to " + toPeg)
+# the recursive hanoi function
+userChoseExit = False
+def doHanoiMove(ringNum, fromPeg, toPeg):
+    global userChoseExit
+
+    if (ringNum == 1):
+        if (userChoseExit or not askToCont()):
+            userChoseExit = True
+            return
 
         moveRing(fromPeg, toPeg)
+        showHanoiState(gb)
+
     else:
         intermediatePeg = otherPeg(fromPeg, toPeg)
-        doHanoiMove(d-1, fromPeg, intermediatePeg)
 
-        println(str(gb[fromPeg][-1]) + " from " + fromPeg + " to " + toPeg)
+        doHanoiMove(ringNum-1, fromPeg, intermediatePeg)
+
+        if (userChoseExit or not askToCont()):
+            userChoseExit = True
+            return
 
         moveRing(fromPeg, toPeg)
+        showHanoiState(gb)
 
-        doHanoiMove(d-1, intermediatePeg, toPeg)
+        doHanoiMove(ringNum-1, intermediatePeg, toPeg)
 
-
-## main method:
-
-initCurses()
-
-gs = 5
-# The game board, a dictionary.  Keys are pegs.  Values are arrays of rings.
-# Rings are implemented just as numbers.
-gb = {'A': list([x for x in list(reversed(range(gs)))]), 'B': [], 'C': []}
-
-doHanoiMove(gs-1, A, C) 
-
-closeCurses()
-
-print(gb)
+if __name__ == "__main__":
+    main()
