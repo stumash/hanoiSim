@@ -5,28 +5,45 @@
 from unicUtils import *
 
 def main():
-    # get the game size
+    # get-input-loop
     while True:
         try:
             gs = int(input("How tall should this Towers of Hanoi be? "))
+            if (gs <= 0 or gs % 1 != 0 or gs >= 10): # if neg or float
+                raise ValueError
+
             break
         except ValueError:
             print("Must input a positive integer under 10.")
 
+    # initizialize the first peg of the game board
     gb[A] = [x for x in list(reversed(range(1, gs+1)))]
 
+    # calculate the minimum terminal dimensions required
+    global minHeight, minWidth
+    minHeight = (gs * 2) + 4
+    minWidth = (gs * 2) * 3 + 1
+
+    # calculate the columns of the pegs
+    global pegCols
+    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
+
+    # some initial printing
     print("initial state: " + str(gb))
 
+    # initialize curses
     initCurses()
 
-    showHanoiState(gb)
-    doHanoiMove(gs, A, C)
+    showHanoiState(gb) # see initial gameboard state
+    doHanoiMove(gs, A, C) # RUN HANOI
 
-    if (gb[A] == [] and gb[B] == []):
-        askToCont()
+    if (gb[A] == [] and gb[B] == []): # if done
+        askToCont() # see final gameboard state
 
+    # shutdown curses
     closeCurses()
 
+    # some final printing
     print("final state: " + str(gb))
     return 0
 

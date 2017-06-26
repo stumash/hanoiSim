@@ -12,6 +12,13 @@ pegs = [A,B,C]
 # the game size (the number of rings)
 gs = 0
 
+# the minimum dimensions of the terminal given the game size
+minHeight = 0
+minWidth = 0
+
+# the columns of the pegs
+pegCols = {peg:0 for peg in pegs}
+
 # The game board, a dictionary.  Keys are pegs.  Values are arrays of rings.
 # Rings are implemented just as numbers.
 gb = {A: [], B: [], C: []}
@@ -23,17 +30,15 @@ stdscr
 def initCurses():
     global stdscr
     stdscr = initscr()
-    stdscr.keypad(1)
     noecho()
     cbreak()
 def closeCurses():
     global stdscr
-    stdscr.keypad(0)
     echo()
     nocbreak()
     endwin()
 
-# println for unicurses
+# make an instance of the println function for unicurses
 def makePrintln(initRow, initCol):
     def println(s):
         nonlocal initRow
@@ -48,10 +53,25 @@ def refreshPrintln():
 
 # ask the user if they want to see the next hanoi move
 def askToCont():
-    c = chr(getch()) # keycode
-    return  c != 'q' # 'q' to quit
+    return chr(getch()) != 'q' # 'q' to quit
 
 def showHanoiState(board):
-    scrRowCol = getmaxyx(stdscr)
-    #
+    stdscr.clear()
+    if terminalIsBigEnough():
+        displayInstructions()
+        renderHanoiState()
+    else:
+        displayInstructions()
+
     println(str(board))
+
+def terminalIsBigEnough():
+    (numrows, numcols) = getmaxyx(stdscr)
+    return numrows < minHeight and numcols < minWidth
+
+def displayInstructions():
+    mvaddstr(1,1,"Type 'q' to quit")
+    mvaddstr(2,1,"Type 'n' for next move")
+def renderHanoiState():
+    (numrows, numcols) = getmaxyx(stdscr)
+    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
