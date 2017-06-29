@@ -1,7 +1,6 @@
 # unicUtils.py: helper functions for using unicurses in towers.py
 
 from unicurses import *
-import sys
 
 # the pegs of the gameboard
 A = 'A'
@@ -51,6 +50,17 @@ def refreshPrintln():
     global println
     println = makePrintln(0,0)
 
+def calcMinNeededDims():
+    global minHeight, minWidth
+    minHeight = (gs * 2) + 4
+    minWidth = (gs * 2) * 3 + 1
+def calcPegLocations():
+    global pegCols, gs
+    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
+def setGs(gs_p):
+    global gs
+    gs = gs_p
+
 # ask the user if they want to see the next hanoi move
 def askToCont():
     return chr(getch()) != 'q' # 'q' to quit
@@ -59,19 +69,31 @@ def showHanoiState(board):
     stdscr.clear()
     if terminalIsBigEnough():
         displayInstructions()
+        showPegs()
         renderHanoiState()
     else:
         displayInstructions()
-
-    println(str(board))
-
-def terminalIsBigEnough():
-    (numrows, numcols) = getmaxyx(stdscr)
-    return numrows < minHeight and numcols < minWidth
+        mvaddstr(3,1, "This terminal is not big enough for the size of game that you entered.")
 
 def displayInstructions():
     mvaddstr(1,1,"Type 'q' to quit")
     mvaddstr(2,1,"Type 'n' for next move")
+def showPegs():
+    (numrows, numcols) = getmaxyx(stdscr)
+    global pegCols, minHeight, gs
+    for i in reversed(range(numrows-(gs*2),numrows-1)):
+        mvaddstr(i, pegCols[A], '|')
+        mvaddstr(i, pegCols[B], '|')
+        mvaddstr(i, pegCols[C], '|')
 def renderHanoiState():
     (numrows, numcols) = getmaxyx(stdscr)
-    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
+    for peg in pegs:
+        row = numrows - 2
+        for ring in gb[peg]:
+            startCol = pegCols[peg] - ring + 1
+            for col in range(startCol, startCol + ring * 2 - 1):
+                mvaddstr(row,col,"#")
+            row -= 2
+def terminalIsBigEnough():
+    (numrows, numcols) = getmaxyx(stdscr)
+    return minHeight < numrows and minWidth < numcols

@@ -9,24 +9,20 @@ def main():
     while True:
         try:
             gs = int(input("How tall should this Towers of Hanoi be? "))
-            if (gs <= 0 or gs % 1 != 0 or gs >= 10): # if neg or float
+            if (gs <= 0 or gs % 1 != 0 or gs >= 15): # if neg or float
                 raise ValueError
-
+            setGs(gs)
             break
         except ValueError:
-            print("Must input a positive integer under 10.")
+            print("Must input a positive integer 15 or less.  Anything bigger takes too long.")
 
     # initizialize the first peg of the game board
     gb[A] = [x for x in list(reversed(range(1, gs+1)))]
 
-    # calculate the minimum terminal dimensions required
-    global minHeight, minWidth
-    minHeight = (gs * 2) + 4
-    minWidth = (gs * 2) * 3 + 1
-
-    # calculate the columns of the pegs
-    global pegCols
-    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
+    # calculate the minimum terminal dimensions required based on gs
+    calcMinNeededDims()
+    # calculate the columns of the pegs based on gs
+    calcPegLocations()
 
     # some initial printing
     print("initial state: " + str(gb))
@@ -61,26 +57,32 @@ userChoseExit = False
 def doHanoiMove(ringNum, fromPeg, toPeg):
     global userChoseExit
 
+    # base case (smallest ring)
     if (ringNum == 1):
         if (userChoseExit or not askToCont()):
+            return # let's recurse the hell outta here!
             userChoseExit = True
-            return
 
+        # smallest ring never has tower above
         moveRing(fromPeg, toPeg)
         showHanoiState(gb)
 
+    # all other rings
     else:
         intermediatePeg = otherPeg(fromPeg, toPeg)
 
+        # move tower above to intermediate peg
         doHanoiMove(ringNum-1, fromPeg, intermediatePeg)
 
         if (userChoseExit or not askToCont()):
+            return # let's recurse the hell outta here!
             userChoseExit = True
-            return
 
+        # move to open peg
         moveRing(fromPeg, toPeg)
         showHanoiState(gb)
 
+        # move tower back on top
         doHanoiMove(ringNum-1, intermediatePeg, toPeg)
 
 if __name__ == "__main__":
