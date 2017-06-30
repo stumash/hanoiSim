@@ -5,7 +5,7 @@ import unicurses as UC
 class HanoiBoard():
 
     # initialize hanoi board data structures and state
-    def __init__(self):
+    def setup(self):
         # the hanoi board data structure
         self.A = 'A' # left peg
         self.B = 'B' # middle peg
@@ -21,26 +21,12 @@ class HanoiBoard():
         # the height of the game (number of rings)
         self.towerHeight = 0
 
-        # the screen dimensions needed given the height of the game
-        self.minimumScreenHeight = 0
-        self.minimumScreenWidth = 0
-
         # documented below
-        self.userWantsToContinue = makeCharReader()
+        self.askUserIfContinue = self.makeUserActionAsker()
 
         # init vals for unicurses utility functions at below
-        self.initUtilies()
+        self.setupUtilities()
 
-
-    # use towerHeight to determine the minimum needed terminal
-    # dimensions to be able to display the board and instructions
-    def calcMinNeededDims(self):
-        if self.towerHeight != 0:
-            th = self.towerHeight
-        else:
-            th =
-        self.minimumScreenHeight = (th * 2) + 4
-        self.minimumScreenWidth = (th * 2) * 3 + 1
 
     # base on game size, calculate the column locations of the
     # three pegs of the board
@@ -50,23 +36,6 @@ class HanoiBoard():
             pegCols[peg] = ((i * 2) + 1) * self.towerHeight
 
 
-    # make a function that returns True until a certain
-    # condition is met and from then on returns False
-    def makeCharReader(self):
-        userWantsNextMove = True
-
-        def askUserToContinue():
-            nonlocal userWantsNextMove
-            if userWantsNextMove:
-                while (True):
-                    c = chr(UC.getch())
-                    if c == 'n': # user chose to see next move
-                        break
-                    elif c == 'q': # user chose to quit
-                        userWantsNextMove = false
-                        break
-            return userWantsNextMove
-        return askUserToContinue
 
 
     #---------------------------------------------------
@@ -92,11 +61,39 @@ class HanoiBoard():
             nonlocal initRow
             mvaddstr(initRow, initCol, s)
             initRow += 1
-    cls.println = makePrintln()
+        return println
 
-    def terminalIsBigEnough():
+    # make a function that returns True until a certain
+    # condition is met and from then on returns False
+    @classmethod
+    def makeUserActionAsker(cls):
+        userWantsNextMove = True
+
+        def askUserToContinue():
+            nonlocal userWantsNextMove
+            if userWantsNextMove:
+                while (True):
+                    c = chr(UC.getch())
+                    if c == 'n': # user chose to see next move
+                        break
+                    elif c == 'q': # user chose to quit
+                        userWantsNextMove = false
+                        break
+            return userWantsNextMove
+        return askUserToContinue
+
+    def terminalIsBigEnough(self):
         (numrows, numcols) = getmaxyx(stdscr)
+        (neededRows)
         return self.minimumScreenHeight < numrows and self.minimumScreenWidth < numcols
+
+    # use towerHeight to determine the minimum needed terminal
+    # dimensions to be able to display the board and instructions
+    @classmethod
+    def calcMinNeededDims(cls, th):
+        minScreenHeight = (th * 2) + 4
+        minScreenWidth= (th * 2) * 3 + 1
+        return (minScreenHeight, minScreenWidth)
 
     def showHanoiState(board):
         stdscr.clear()

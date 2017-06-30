@@ -14,8 +14,9 @@ def main():
     BAD_INP_TYPE_MSG = 'Must input positive integer.'
     INP_TOO_LARGE_MSG = 'Input too big for screen size.'
 
-    # the board object
+    # initialize the hanoi board object
     b = HanoiBoard()
+    b.setup()
 
     # get-input-loop
     while True:
@@ -27,10 +28,10 @@ def main():
                 raise ValueError
             elif (): # th is too big
                 raise UnreasonableInputError
-
-            break # break the while-loop
+            setGs(gs)
+            break
         except UnreasonableInputError:
-            print(INP_TOO_LARGE_MSG)
+            print()
         except ValueError:
             print(BAD_INP_TYPE)
 
@@ -45,7 +46,7 @@ def main():
     print("initial state: " + str(gb))
 
     # initialize curses
-    mucu.initCurses()
+    HanoiBoard.initCurses()
 
     showHanoiState(gb) # see initial gameb state
     doHanoiMove(gs, A, C) # RUN HANOI
@@ -54,7 +55,7 @@ def main():
         askToCont() # see final gameb state
 
     # shutdown curses
-    mucu.closeCurses()
+    HanoiBoard.closeCurses()
 
     # some final printing
     print("final state: " + str(gb))
@@ -101,7 +102,6 @@ def doHanoiMove(ringNum, fromPeg, toPeg):
 
         # move tower back on top
         doHanoiMove(ringNum-1, intermediatePeg, toPeg)
-
 
 if __name__ == "__main__":
     main()
