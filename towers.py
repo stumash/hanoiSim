@@ -2,42 +2,45 @@
 # beats a game of Towers of Hano
 
 # imports
-from unicUtils import *
+from unicUtils import HanoiBoard 
+from unicUtils import MyUnicursesUtilities as mucu
 
 def main():
+
+    b = HanoiBoard()
+
     # get-input-loop
     while True:
         try:
-            gs = int(input("How tall should this Towers of Hanoi be? "))
-            if (gs <= 0 or gs % 1 != 0 or gs >= 15): # if neg or float
+            b.towerHeight = int(input("How tall should this Towers of Hanoi be? "))
+            th = b.towerHeight
+            if (th <= 0 or th % 1 != 0 or th >= 15): # if neg or float
                 raise ValueError
             setGs(gs)
             break
         except ValueError:
             print("Must input a positive integer 15 or less.  Anything bigger takes too long.")
 
-    # initizialize the first peg of the game board
-    gb[A] = [x for x in list(reversed(range(1, gs+1)))]
+    # initizialize peg A of the hanoi board
+    b.board[b.A] = [x for x in list(reversed(range(1, gs+1)))]
 
-    # calculate the minimum terminal dimensions required based on gs
-    calcMinNeededDims()
-    # calculate the columns of the pegs based on gs
-    calcPegLocations()
+    b.calcMinNeededDims()
+    b.calcPegLocations()
 
     # some initial printing
     print("initial state: " + str(gb))
 
     # initialize curses
-    initCurses()
+    mucu.initCurses()
 
-    showHanoiState(gb) # see initial gameboard state
+    showHanoiState(gb) # see initial gameb state
     doHanoiMove(gs, A, C) # RUN HANOI
 
     if (gb[A] == [] and gb[B] == []): # if done
-        askToCont() # see final gameboard state
+        askToCont() # see final gameb state
 
     # shutdown curses
-    closeCurses()
+    mucu.closeCurses()
 
     # some final printing
     print("final state: " + str(gb))
@@ -48,7 +51,7 @@ def otherPeg(fromPeg, toPeg): # given 2 of the 3 pegs, return the 3rd
     for peg in pegs:
         if peg not in [fromPeg, toPeg]:
             return peg
-def moveRing(fromPeg, toPeg): # on the game board gb, move a ring from fromPeg to toPeg
+def moveRing(fromPeg, toPeg): # on the game b gb, move a ring from fromPeg to toPeg
     ring = gb[fromPeg].pop()
     gb[toPeg].append(ring)
 

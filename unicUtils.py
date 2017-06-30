@@ -1,99 +1,134 @@
-# unicUtils.py: helper functions for using unicurses in towers.py
+# A utilities file for towers.py
 
-from unicurses import *
+import unicurses as UC
 
-# the pegs of the gameboard
-A = 'A'
-B = 'B'
-C = 'C'
-pegs = [A,B,C]
+class HanoiBoard():
 
-# the game size (the number of rings)
-gs = 0
+    # initialize hanoi board data structures and state
+    def __init__(self):
+        # the hanoi board data structure
+        self.A = 'A' # left peg
+        self.B = 'B' # middle peg
+        self.A = 'A' # right peg
+        # convenient data structure
+        self.pegs = [self.A, self.B, self.C]
 
-# the minimum dimensions of the terminal given the game size
-minHeight = 0
-minWidth = 0
+        # colum location of peg on screen
+        self.pegCols = {peg:0 for peg in pegs}
+        # board data structure
+        self.board = {peg:[] for peg in pegs}
 
-# the columns of the pegs
-pegCols = {peg:0 for peg in pegs}
+        # the height of the game (number of rings)
+        self.towerHeight = 0
 
-# The game board, a dictionary.  Keys are pegs.  Values are arrays of rings.
-# Rings are implemented just as numbers.
-gb = {A: [], B: [], C: []}
+        # the screen dimensions needed given the height of the game
+        self.minimumScreenHeight = 0
+        self.minimumScreenWidth = 0
 
-# the unicurses running screen object
-stdscr
+        # documented below
+        self.userWantsToContinue = makeCharReader()
 
-# setup and teardown of Unicurses terminal highjacking
-def initCurses():
-    global stdscr
-    stdscr = initscr()
-    noecho()
-    cbreak()
-def closeCurses():
-    global stdscr
-    echo()
-    nocbreak()
-    endwin()
+        # init vals for unicurses utility functions at below
+        self.initUtilies()
 
-# make an instance of the println function for unicurses
-def makePrintln(initRow, initCol):
-    def println(s):
-        nonlocal initRow
-        mvaddstr(initRow, initCol, s)
-        initRow += 1
-    return println
-println = makePrintln(0,0)
 
-def refreshPrintln():
-    global println
-    println = makePrintln(0,0)
+    # use towerHeight to determine the minimum needed terminal
+    # dimensions to be able to display the board and instructions
+    def calcMinNeededDims(self):
+        th = self.towerHeight
+        self.minimumScreenHeight = (th * 2) + 4
+        self.minimumScreenWidth = (th * 2) * 3 + 1
 
-def calcMinNeededDims():
-    global minHeight, minWidth
-    minHeight = (gs * 2) + 4
-    minWidth = (gs * 2) * 3 + 1
-def calcPegLocations():
-    global pegCols, gs
-    pegCols = {pegs[i]: (i*2 + 1)*gs for i in range(3)}
-def setGs(gs_p):
-    global gs
-    gs = gs_p
+    # base on game size, calculate the column locations of the
+    # three pegs of the board
+    def calcPegLocations(self):
+        for peg in pegs:
+            i = pegs.index(peg)
+            pegCols[peg] = ((i * 2) + 1) * self.towerHeight
 
-# ask the user if they want to see the next hanoi move
-def askToCont():
-    return chr(getch()) != 'q' # 'q' to quit
 
-def showHanoiState(board):
-    stdscr.clear()
-    if terminalIsBigEnough():
-        displayInstructions()
-        showPegs()
-        renderHanoiState()
-    else:
-        displayInstructions()
-        mvaddstr(3,1, "This terminal is not big enough for the size of game that you entered.")
+    # make a function that returns True until a certain
+    # condition is met and from then on returns False
+    def makeCharReader(self):
+        userWantsNextMove = True
 
-def displayInstructions():
-    mvaddstr(1,1,"Type 'q' to quit")
-    mvaddstr(2,1,"Type 'n' for next move")
-def showPegs():
-    (numrows, numcols) = getmaxyx(stdscr)
-    global pegCols, minHeight, gs
-    for i in reversed(range(numrows-(gs*2),numrows-1)):
-        mvaddstr(i, pegCols[A], '|')
-        mvaddstr(i, pegCols[B], '|')
-        mvaddstr(i, pegCols[C], '|')
-def renderHanoiState():
-    (numrows, numcols) = getmaxyx(stdscr)
-    for peg in pegs:
-        row = numrows - 2
-        for ring in gb[peg]:
-            startCol = pegCols[peg] - ring + 1
-            for col in range(startCol, startCol + ring * 2 - 1):
-                mvaddstr(row,col,"#")
-            row -= 2
-def terminalIsBigEnough():
-    (numrows, numcols) = getmaxyx(stdscr)
-    return minHeight < numrows and minWidth < numcols
+        def askUserToContinue():
+            nonlocal userWantsNextMove
+            if userWantsNextMove:
+                while (True):
+                    c = chr(UC.getch())
+                    if c == 'n': # user chose to see next move
+                        break
+                    elif c == 'q': # user chose to quit
+                        userWantsNextMove = false
+                        break
+            return userWantsNextMove
+        return askUserToContinue
+
+
+    #---------------------------------------------------
+    #                   UTILITIES
+    #---------------------------------------------------
+
+    def initCurses():
+        self.stdscr = UC.initscr()
+        UC.noecho()
+        UC.cbreak()
+
+    def closeCurses():
+        UC.echo()
+        UC.cbreak()
+        UC.endwin()
+
+    # make an instance of the println function for unicurses
+    def makePrintln(initRow, initCol):
+        def println(s):
+            nonlocal initRow
+            mvaddstr(initRow, initCol, s)
+            initRow += 1
+        self.println = makePrintln(0,0)
+
+    def refreshPrintln(initRow=0,initCol=0):
+        self.println = makePrintln(initRow,initRow)
+
+
+    def showHanoiState(board):
+        stdscr.clear()
+        if terminalIsBigEnough():
+            displayInstructions([
+                {'row': 1, 'col': 1},
+                {}
+                ])
+            showPegs()
+            renderHanoiState()
+        else:
+            displayInstructions()
+            mvaddstr(3,1, "This terminal is not big enough for the size of game that you entered.")
+
+    def displayInstructions(params):
+        for param in params:
+            mvaddstr(param['row'], param['col'], param['s'])
+        "Type 'q' to quit"
+        "Type 'n' for next move"
+
+    def displayPegs():
+        (numrows, numcols) = getmaxyx(stdscr)
+        global pegCols, minHeight, gs
+        for i in reversed(range(numrows-(gs*2),numrows-1)):
+            mvaddstr(i, pegCols[A], '|')
+            mvaddstr(i, pegCols[B], '|')
+            mvaddstr(i, pegCols[C], '|')
+
+    def renderHanoiState():
+        (numrows, numcols) = getmaxyx(stdscr)
+        for peg in pegs:
+            row = numrows - 2
+            for ring in gb[peg]:
+                startCol = pegCols[peg] - ring + 1
+                for col in range(startCol, startCol + ring * 2 - 1):
+                    mvaddstr(row,col,"#")
+                row -= 2
+
+    def terminalIsBigEnough():
+        (numrows, numcols) = getmaxyx(stdscr)
+        return self.minimumScreenHeight < numrows and self.minimumScreenWidth < numcols
