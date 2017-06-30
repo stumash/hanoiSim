@@ -35,7 +35,10 @@ class HanoiBoard():
     # use towerHeight to determine the minimum needed terminal
     # dimensions to be able to display the board and instructions
     def calcMinNeededDims(self):
-        th = self.towerHeight
+        if self.towerHeight != 0:
+            th = self.towerHeight
+        else:
+            th =
         self.minimumScreenHeight = (th * 2) + 4
         self.minimumScreenWidth = (th * 2) * 3 + 1
 
@@ -67,30 +70,33 @@ class HanoiBoard():
 
 
     #---------------------------------------------------
-    #                   UTILITIES
+    #  Utilities
     #---------------------------------------------------
 
-    def initCurses():
+    @classmethod
+    def initCurses(cls):
         self.stdscr = UC.initscr()
         UC.noecho()
         UC.cbreak()
 
-    def closeCurses():
+    @classmethod
+    def closeCurses(cls):
         UC.echo()
         UC.cbreak()
         UC.endwin()
 
     # make an instance of the println function for unicurses
-    def makePrintln(initRow, initCol):
+    @classmethod
+    def makePrintln(cls, initRow=0, initCol=0):
         def println(s):
             nonlocal initRow
             mvaddstr(initRow, initCol, s)
             initRow += 1
-        self.println = makePrintln(0,0)
+    cls.println = makePrintln()
 
-    def refreshPrintln(initRow=0,initCol=0):
-        self.println = makePrintln(initRow,initRow)
-
+    def terminalIsBigEnough():
+        (numrows, numcols) = getmaxyx(stdscr)
+        return self.minimumScreenHeight < numrows and self.minimumScreenWidth < numcols
 
     def showHanoiState(board):
         stdscr.clear()
@@ -129,6 +135,3 @@ class HanoiBoard():
                     mvaddstr(row,col,"#")
                 row -= 2
 
-    def terminalIsBigEnough():
-        (numrows, numcols) = getmaxyx(stdscr)
-        return self.minimumScreenHeight < numrows and self.minimumScreenWidth < numcols

@@ -3,23 +3,37 @@
 
 # imports
 from unicUtils import HanoiBoard 
-from unicUtils import MyUnicursesUtilities as mucu
+
+class UnreasonableInputError(ValueError):
+    pass
 
 def main():
 
+    # string constants
+    NUM_RINGS_ASK = "How tall should this Towers of Hanoi be?"
+    BAD_INP_TYPE_MSG = 'Must input positive integer.'
+    INP_TOO_LARGE_MSG = 'Input too big for screen size.'
+
+    # the board object
     b = HanoiBoard()
 
     # get-input-loop
     while True:
         try:
-            b.towerHeight = int(input("How tall should this Towers of Hanoi be? "))
+            b.towerHeight = int(input(NUM_RINGS_ASK))
+
             th = b.towerHeight
-            if (th <= 0 or th % 1 != 0 or th >= 15): # if neg or float
+            if (th <= 0 or th % 1 != 0):
                 raise ValueError
-            setGs(gs)
-            break
+            elif (): # th is too big
+                raise UnreasonableInputError
+
+            break # break the while-loop
+        except UnreasonableInputError:
+            print(INP_TOO_LARGE_MSG)
         except ValueError:
-            print("Must input a positive integer 15 or less.  Anything bigger takes too long.")
+            print(BAD_INP_TYPE)
+
 
     # initizialize peg A of the hanoi board
     b.board[b.A] = [x for x in list(reversed(range(1, gs+1)))]
@@ -87,6 +101,7 @@ def doHanoiMove(ringNum, fromPeg, toPeg):
 
         # move tower back on top
         doHanoiMove(ringNum-1, intermediatePeg, toPeg)
+
 
 if __name__ == "__main__":
     main()
