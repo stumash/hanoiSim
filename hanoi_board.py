@@ -1,79 +1,71 @@
-# A utilities file for towers.py
-
-import unicurses as UC
+from unicurses import *
 
 class HanoiBoard():
 
-    # initialize hanoi board data structures and state
-    def setup(self):
-        # the hanoi board data structure
-        self.A = 'A' # left peg
-        self.B = 'B' # middle peg
-        self.A = 'A' # right peg
+    def __init__(self):
+
+        #-------------
+        #  string constants
+        #-------------
+
+        self.INSTRCTN_QUIT = "Type 'q' to quit"
+        self.INSTRCTN_NEXT = "Type 'n' for next move"
+        self.WARNING_MESSAGE = "SCREEN TOO SMALL"
+
+        #-------------
+        #  the board
+        #-------------
+
+        self.pegA = 'A' # left peg
+        self.pegB = 'B' # middle peg
+        self.pegC = 'C' # right peg
+
         # convenient data structure
-        self.pegs = [self.A, self.B, self.C]
+        self.pegs = [self.pegA, self.pegB, self.pegC]
 
-        # colum location of peg on screen
-        self.pegCols = {peg:0 for peg in pegs}
-        # board data structure
-        self.board = {peg:[] for peg in pegs}
+        # colum location of peg on screen, 0 for now
+        self.pegCols = {peg:0 for peg in self.pegs}
+        # board data structure, empty pegs for now
+        self.board = {peg:[] for peg in self.pegs}
 
-        # the height of the game (number of rings)
+        # the number of rings in the game, 0 for now
         self.towerHeight = 0
 
-        # documented below
+        #-------------------------------------------------------------
+        #  functions needing initialization/having internal state
+        #-------------------------------------------------------------
+
+        # asks user if continue. once user says no, never ask again
         self.askUserIfContinue = self.makeUserActionAsker()
 
-        # init vals for unicurses utility functions at below
-        self.setupUtilities()
-
-
-    # base on game size, calculate the column locations of the
-    # three pegs of the board
-    def calcPegLocations(self):
-        for peg in pegs:
-            i = pegs.index(peg)
-            pegCols[peg] = ((i * 2) + 1) * self.towerHeight
-
-
+        # prints in unicurses, new line for each print
+        self.println = self.makePrintln()
 
 
     #---------------------------------------------------
-    #  Utilities
+    #  utilities
     #---------------------------------------------------
 
-    @classmethod
-    def initCurses(cls):
-        self.stdscr = UC.initscr()
-        UC.noecho()
-        UC.cbreak()
+    def initCurses(self):
+        self.stdscr = initscr()
+        noecho()
+        cbreak()
 
-    @classmethod
-    def closeCurses(cls):
-        UC.echo()
-        UC.cbreak()
-        UC.endwin()
+    def closeCurses(self):
+        echo()
+        cbreak()
+        endwin()
 
-    # make an instance of the println function for unicurses
-    @classmethod
-    def makePrintln(cls, initRow=0, initCol=0):
-        def println(s):
-            nonlocal initRow
-            mvaddstr(initRow, initCol, s)
-            initRow += 1
-        return println
-
-    # make a function that returns True until a certain
-    # condition is met and from then on returns False
-    @classmethod
-    def makeUserActionAsker(cls):
+    # make a function that returns True until the user
+    # types 'n' or 'q', and then only returns False
+    def makeUserActionAsker(self):
         userWantsNextMove = True
 
         def askUserToContinue():
             nonlocal userWantsNextMove
             if userWantsNextMove:
                 while (True):
-                    c = chr(UC.getch())
+                    c = chr(getch())
                     if c == 'n': # user chose to see next move
                         break
                     elif c == 'q': # user chose to quit
@@ -82,53 +74,82 @@ class HanoiBoard():
             return userWantsNextMove
         return askUserToContinue
 
-    def terminalIsBigEnough(self):
-        (numrows, numcols) = getmaxyx(stdscr)
-        (neededRows)
-        return self.minimumScreenHeight < numrows and self.minimumScreenWidth < numcols
+    # make an instance of the println function for unicurses
+    def makePrintln(self, initRow=0, initCol=0):
+        def println(s):
+            nonlocal initRow, initCol
+            mvaddstr(initRow, initCol, s)
+            initRow += 1 # print on the next line next time
+        return println
+
+    # base on game size, calculate the column locations of the
+    # three pegs of the board
+    def calcPegLocations(self, th = None):
+        if (th == None):
+            th = self.towerHeight
+        for (i,peg) in enumerate(self.pegs):
+            self.pegCols[peg] = ((i * 2) + 1) * th
 
     # use towerHeight to determine the minimum needed terminal
     # dimensions to be able to display the board and instructions
-    @classmethod
-    def calcMinNeededDims(cls, th):
-        minScreenHeight = (th * 2) + 4
-        minScreenWidth= (th * 2) * 3 + 1
-        return (minScreenHeight, minScreenWidth)
+    def calcMinNeededDims(self, th = None):
+        if (th == None):
+            th = self.towerHeight
+        self.minScreenHeight = (th * 2) + 4
+        self.minScreenWidth= (th * 2) * 3 + 1
 
-    def showHanoiState(board):
-        stdscr.clear()
-        if terminalIsBigEnough():
-            displayInstructions([
-                {'row': 1, 'col': 1},
-                {}
-                ])
-            showPegs()
-            renderHanoiState()
-        else:
-            displayInstructions()
-            mvaddstr(3,1, "This terminal is not big enough for the size of game that you entered.")
+    # determine if terminal is big enough given tower height
+    def terminalIsTallEnough(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        return self.minScreenHeight < numrows
+    def terminalIsWideEnough(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        return self.minScreenWidth < numcols
 
-    def displayInstructions(params):
-        for param in params:
-            mvaddstr(param['row'], param['col'], param['s'])
-        "Type 'q' to quit"
-        "Type 'n' for next move"
+    # high level function to make all animation appear on screen
+    def displayHanoiState(self):
+        self.stdscr.clear()
+        if self.terminalIsWideEnough():
+            self.displayInstructions()
+            if self.terminalIsTallEnough():
+                self.displayPegs()
+                self.renderHanoiState()
+            self.displayWarningMessage()
+        else: # Uh oh
+            mvaddstr(0,0,'!')
 
-    def displayPegs():
-        (numrows, numcols) = getmaxyx(stdscr)
-        global pegCols, minHeight, gs
-        for i in reversed(range(numrows-(gs*2),numrows-1)):
-            mvaddstr(i, pegCols[A], '|')
-            mvaddstr(i, pegCols[B], '|')
-            mvaddstr(i, pegCols[C], '|')
+    def displayInstructions(self):
+        quitMsg, nextMsg = self.INSTRCTN_QUIT, self.INSTRCTN_NEXT
+        mvaddstr(1, 1, quitMsg)
+        mvaddstr(2, 1, nextMsg)
+    def displayWarningMessage(self):
+        warningMsg = self.WARNING_MESSAGE
+        mvaddstr(3, 1, warningMsg)
 
-    def renderHanoiState():
-        (numrows, numcols) = getmaxyx(stdscr)
-        for peg in pegs:
+    def displayPegs(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        pegCols, th = self.pegCols, self.towerHeight
+        for i in reversed(range(numrows-(th*2),numrows-1)):
+            for peg in self.pegs:
+                mvaddstr(i, pegCols[peg], '|')
+
+    def renderHanoiState(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        for peg in self.pegs:
             row = numrows - 2
-            for ring in gb[peg]:
-                startCol = pegCols[peg] - ring + 1
+            for ring in self.board[peg]:
+                startCol = self.pegCols[peg] - ring + 1
                 for col in range(startCol, startCol + ring * 2 - 1):
                     mvaddstr(row,col,"#")
                 row -= 2
+
+    # helper functions for the doHanoiMove function
+    def otherPeg(self, fromPeg, toPeg): # given 2 of the 3 pegs, return the 3rd
+        for peg in self.pegs:
+            if peg not in [fromPeg, toPeg]:
+                return peg
+    # on the game board, move a ring from fromPeg to toPeg
+    def moveRing(self, fromPeg, toPeg):
+        ring = self.board[fromPeg].pop()
+        self.board[toPeg].append(ring)
 
