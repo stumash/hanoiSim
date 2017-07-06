@@ -98,14 +98,6 @@ class HanoiBoard():
         self.minScreenHeight = (th * 2) + 4
         self.minScreenWidth= (th * 2) * 3 + 1
 
-    # determine if terminal is big enough given tower height
-    def terminalIsTallEnough(self):
-        (numrows, numcols) = getmaxyx(self.stdscr)
-        return self.minScreenHeight < numrows
-    def terminalIsWideEnough(self):
-        (numrows, numcols) = getmaxyx(self.stdscr)
-        return self.minScreenWidth < numcols
-
     # high level function to make all animation appear on screen
     def displayGame(self):
         self.stdscr.clear()
@@ -118,6 +110,13 @@ class HanoiBoard():
                 self.displayWarningMessage()
         else: # Uh oh
             mvaddstr(0,0,'!')
+
+    def terminalIsTallEnough(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        return self.minScreenHeight < numrows
+    def terminalIsWideEnough(self):
+        (numrows, numcols) = getmaxyx(self.stdscr)
+        return self.minScreenWidth < numcols
 
     def displayInstructions(self):
         quitMsg, nextMsg = self.INSTRCTN_QUIT, self.INSTRCTN_NEXT
@@ -156,4 +155,3 @@ class HanoiBoard():
 
     def getChar(self):
         getch()
-
