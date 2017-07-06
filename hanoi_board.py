@@ -107,14 +107,15 @@ class HanoiBoard():
         return self.minScreenWidth < numcols
 
     # high level function to make all animation appear on screen
-    def displayHanoiState(self):
+    def displayGame(self):
         self.stdscr.clear()
         if self.terminalIsWideEnough():
             self.displayInstructions()
-            self.displayWarningMessage()
             if self.terminalIsTallEnough():
                 self.displayPegs()
                 self.renderHanoiState()
+            else:
+                self.displayWarningMessage()
         else: # Uh oh
             mvaddstr(0,0,'!')
 

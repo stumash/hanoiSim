@@ -38,7 +38,7 @@ def main():
     # some initial printing
     f.write("initial state: " + str(b.board) + "\n")
 
-    b.displayHanoiState() # see initial game state
+    b.displayGame() # see initial game state
     doHanoiMove(f, b, b.towerHeight, b.pegA, b.pegC) # RUN HANOI
 
     b.getChar()
@@ -46,8 +46,7 @@ def main():
     # shutdown curses
     b.closeCurses()
 
-    # some final printing
-    print("final state: " + str(b.towerHeight))
+    # exit the program with success code
     return 0
 
 
@@ -63,7 +62,7 @@ def doHanoiMove(f, b, ring, fromPeg, toPeg):
             f.write("before " + str(b.board) + "\n")
             b.moveRing(fromPeg, toPeg)
             f.write("after " + str(b.board) + "\n")
-            b.displayHanoiState()
+            b.displayGame()
             f.write("after  " + str(b.board) + "\n")
             f.write("e\n")
         else:
@@ -81,7 +80,7 @@ def doHanoiMove(f, b, ring, fromPeg, toPeg):
             f.write("before" + str(b.board) + "\n")
             b.moveRing(fromPeg, toPeg)
             f.write("after  " + str(b.board) + "\n")
-            b.displayHanoiState()
+            b.displayGame()
             f.write("after  " + str(b.board) + "\n")
             f.write("e\n")
         else:
