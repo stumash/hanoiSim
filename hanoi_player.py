@@ -6,6 +6,8 @@ from hanoi_board import HanoiBoard
 
 def main():
 
+    f = open("debugOutput.txt", "w")
+
     # string constants
     NUM_RINGS_ASK = "How tall should this Towers of Hanoi be? "
     BAD_INP_TYPE_MSG = "Must input positive integer."
@@ -34,13 +36,12 @@ def main():
     b.calcPegLocations()
 
     # some initial printing
-    print("initial state: " + str(b.board))
+    f.write("initial state: " + str(b.board) + "\n")
 
     b.displayHanoiState() # see initial game state
-    doHanoiMove(b, b.towerHeight, b.pegA, b.pegC) # RUN HANOI
+    doHanoiMove(f, b, b.towerHeight, b.pegA, b.pegC) # RUN HANOI
 
-    if (b.board[A] == [] and b.board[B] == []): # if done
-        b.askUserIfContinue() # see final game state
+    b.getChar()
 
     # shutdown curses
     b.closeCurses()
@@ -51,15 +52,20 @@ def main():
 
 
 # the recursive hanoi function
-def doHanoiMove(b, ring, fromPeg, toPeg):
+def doHanoiMove(f, b, ring, fromPeg, toPeg):
 
     # base case (smallest ring)
     if (ring == 1):
 
         if b.askUserIfContinue():
             # smallest ring never has tower above
+            f.write("s\n")
+            f.write("before " + str(b.board) + "\n")
             b.moveRing(fromPeg, toPeg)
+            f.write("after " + str(b.board) + "\n")
             b.displayHanoiState()
+            f.write("after  " + str(b.board) + "\n")
+            f.write("e\n")
         else:
             return # recurse the hell outta there
 
@@ -68,21 +74,21 @@ def doHanoiMove(b, ring, fromPeg, toPeg):
         intermediatePeg = b.otherPeg(fromPeg, toPeg)
 
         # move tower above to intermediate peg
-        doHanoiMove(b, ring-1, fromPeg, intermediatePeg)
+        doHanoiMove(f, b, ring-1, fromPeg, intermediatePeg)
 
         if b.askUserIfContinue():
-            # smallest ring never has tower above
+            f.write("s\n")
+            f.write("before" + str(b.board) + "\n")
             b.moveRing(fromPeg, toPeg)
+            f.write("after  " + str(b.board) + "\n")
             b.displayHanoiState()
+            f.write("after  " + str(b.board) + "\n")
+            f.write("e\n")
         else:
             return # recurse the hell outta there
 
-        # move to open peg
-        b.moveRing(fromPeg, toPeg)
-        b.displayHanoiState()
-
         # move tower back on top
-        doHanoiMove(b, ring-1, intermediatePeg, toPeg)
+        doHanoiMove(f, b, ring-1, intermediatePeg, toPeg)
 
 if __name__ == "__main__":
     main()

@@ -111,10 +111,10 @@ class HanoiBoard():
         self.stdscr.clear()
         if self.terminalIsWideEnough():
             self.displayInstructions()
+            self.displayWarningMessage()
             if self.terminalIsTallEnough():
                 self.displayPegs()
                 self.renderHanoiState()
-            self.displayWarningMessage()
         else: # Uh oh
             mvaddstr(0,0,'!')
 
@@ -152,4 +152,7 @@ class HanoiBoard():
     def moveRing(self, fromPeg, toPeg):
         ring = self.board[fromPeg].pop()
         self.board[toPeg].append(ring)
+
+    def getChar(self):
+        getch()
 
