@@ -50,10 +50,14 @@ class HanoiBoard():
         self.stdscr = initscr()
         noecho()
         cbreak()
+        self.stdscr.keypad(1)
+        curs_set(False)
 
     def closeCurses(self):
         echo()
         cbreak()
+        self.stdscr.keypad(0)
+        curs_set(True)
         endwin()
 
     # make a function that returns True until the user
@@ -69,7 +73,7 @@ class HanoiBoard():
                     if c == 'n': # user chose to see next move
                         break
                     elif c == 'q': # user chose to quit
-                        userWantsNextMove = false
+                        userWantsNextMove = False
                         break
             return userWantsNextMove
         return askUserToContinue

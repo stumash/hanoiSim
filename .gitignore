@@ -1,1 +1,6 @@
+bin
+debugOutput.txt
+include
+lib
+pip-selfcheck.json
 __pycache__

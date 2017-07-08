@@ -39,10 +39,14 @@ def main():
     f.write("initial state: " + str(b.board) + "\n")
 
     b.displayGame() # see initial game state
-    doHanoiMove(f, b, b.towerHeight, b.pegA, b.pegC) # RUN HANOI
 
-    b.getChar()
-
+    try:
+        # RUN TOWERS OF HANOI
+        doHanoiMove(f, b, b.towerHeight, b.pegA, b.pegC)
+        # let user see last state
+        b.askUserIfContinue()
+    except:
+        pass
     # shutdown curses
     b.closeCurses()
 
@@ -53,23 +57,7 @@ def main():
 # the recursive hanoi function
 def doHanoiMove(f, b, ring, fromPeg, toPeg):
 
-    # base case (smallest ring)
-    if (ring == 1):
-
-        if b.askUserIfContinue():
-            # smallest ring never has tower above
-            f.write("s\n")
-            f.write("before " + str(b.board) + "\n")
-            b.moveRing(fromPeg, toPeg)
-            f.write("after " + str(b.board) + "\n")
-            b.displayGame()
-            f.write("after  " + str(b.board) + "\n")
-            f.write("e\n")
-        else:
-            return # recurse the hell outta there
-
-    # all other rings
-    else:
+    if (ring >= 1):
         intermediatePeg = b.otherPeg(fromPeg, toPeg)
 
         # move tower above to intermediate peg
@@ -83,8 +71,6 @@ def doHanoiMove(f, b, ring, fromPeg, toPeg):
             b.displayGame()
             f.write("after  " + str(b.board) + "\n")
             f.write("e\n")
-        else:
-            return # recurse the hell outta there
 
         # move tower back on top
         doHanoiMove(f, b, ring-1, intermediatePeg, toPeg)
